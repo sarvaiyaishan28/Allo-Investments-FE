@@ -24,7 +24,7 @@ import { useAuth } from '@/components/providers/auth-provider'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Progress } from '@/components/ui/progress'
 import { cn } from '@/lib/utils'
-import { fetchDeals } from '@/lib/api-client'
+import { fetchDeals, fetchUniqueInvestorsCount } from '@/lib/api-client'
 import type { Deal } from '@/lib/types'
 
 const container = {
@@ -133,6 +133,7 @@ function DashboardDealCard({ deal }: { deal: Deal }) {
 
 export function HomePage() {
   const [deals, setDeals] = React.useState<any[]>([])
+  const [uniqueInvestorsCount, setUniqueInvestorsCount] = React.useState<number>(0)
   const [loading, setLoading] = React.useState(true)
   const { requireAuth } = useAuth()
   const router = useRouter()
@@ -145,23 +146,24 @@ export function HomePage() {
   }
 
   React.useEffect(() => {
-    fetchDeals()
-      .then(data => {
-        setDeals(data)
+    Promise.all([fetchDeals(), fetchUniqueInvestorsCount()])
+      .then(([dealsData, investorsCount]) => {
+        setDeals(dealsData)
+        setUniqueInvestorsCount(investorsCount)
         setLoading(false)
       })
       .catch(err => {
-        console.error('Failed to fetch deals', err)
+        console.error('Failed to fetch dashboard data', err)
         setLoading(false)
       })
   }, [])
 
   // Calculate stats based on deals
-  const totalActiveDeals = deals.filter(d => !['closed', 'draft'].includes(d.status)).length || 12; // Fallback to 12 if no data
-  const totalInvestors = deals.reduce((acc, curr) => acc + curr.investorCount, 0) || 668;
-  const capitalRaised = deals.reduce((acc, curr) => acc + curr.totalWired, 0) || 24800000;
+  const totalActiveDeals = deals.filter(d => !['closed', 'draft'].includes(d.status)).length;
+  const totalInvestors = uniqueInvestorsCount;
+  const capitalRaised = deals.reduce((acc, curr) => acc + (curr.totalWired || 0), 0);
   
-  let avgProgress = 48; // Fallback
+  let avgProgress = 0;
   if (deals.length > 0) {
     const totalProgress = deals.reduce((acc, curr) => acc + (curr.targetRaise > 0 ? (curr.totalWired / curr.targetRaise) : 0), 0);
     avgProgress = Math.round((totalProgress / deals.length) * 100);

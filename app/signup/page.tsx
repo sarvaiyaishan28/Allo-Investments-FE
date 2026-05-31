@@ -57,11 +57,17 @@ function SignupPageContent() {
       return
     }
 
-    const { success, error: signupError } = await signup(email.trim(), password, name.trim())
+    const { success, error: signupError, loggedIn } = await signup(email.trim(), password, name.trim())
     
     setIsLoading(false)
     if (success) {
-      setIsSuccess(true)
+      if (loggedIn) {
+        // If they are auto-logged in, redirect them to the dashboard
+        router.push('/')
+      } else {
+        // Directly redirect to login screen
+        router.push('/login')
+      }
     } else {
       setError(signupError || 'An error occurred during signup. Please try again.')
     }

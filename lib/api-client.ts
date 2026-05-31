@@ -74,6 +74,16 @@ export async function fetchInvestments() {
   }
 }
 
+export async function fetchUniqueInvestorsCount() {
+  try {
+    const res = await apiFetch(`/investments/stats/unique-investors`);
+    return res?.count || 0;
+  } catch (error: any) {
+    if (error.message?.includes('401') || error.message?.includes('Unauthorized')) return 0;
+    throw error;
+  }
+}
+
 export async function createInvestment(investmentData: any) {
   return await apiFetch(`/investments`, {
     method: 'POST',

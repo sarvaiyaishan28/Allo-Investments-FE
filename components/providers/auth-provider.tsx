@@ -87,20 +87,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  const signup = async (email: string, password: string, name: string): Promise<{ success: boolean; error?: string }> => {
+  const signup = async (email: string, password: string, name: string): Promise<{ success: boolean; error?: string; loggedIn?: boolean }> => {
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { name } // Store name in user metadata for later profile creation
-        }
+      // Create user via our backend endpoint, which creates the Supabase Auth user AND database user
+      const response = await apiFetch('/users/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, name })
       })
-      if (error) throw error
-      return { success: true }
+      
+      // If the backend returns a session, or if registration succeeds, we try to log them in automatically.
+      // Call the login method directly to establish the session in the frontend context.
+      const loggedIn = await login(email, password)
+      
+      return { success: true, loggedIn }
     } catch (error: any) {
       console.error('Signup failed:', error.message)
-      return { success: false, error: error.message }
+      return { success: false, error: error.message || 'Registration failed' }
     }
   }
 
