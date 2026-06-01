@@ -131,9 +131,72 @@ function DashboardDealCard({ deal }: { deal: Deal }) {
   )
 }
 
+const dummyDeals: Deal[] = [
+  {
+    id: 'dummy-1',
+    name: 'Tech Ventures Fund I',
+    entityName: 'TVF I LLC',
+    status: 'onboarding',
+    type: 'fund',
+    productType: 'fund',
+    managementFee: 2,
+    carry: 20,
+    targetRaise: 5000000,
+    minimumInvestment: 50000,
+    totalSigned: 2500000,
+    totalWired: 1500000,
+    investorCount: 12,
+    estimatedClosingDate: new Date().toISOString(),
+    offeringType: '506c',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    fundManagerId: 'fm-1',
+  },
+  {
+    id: 'dummy-2',
+    name: 'Green Energy SPV',
+    entityName: 'Green Energy LLC',
+    status: 'closing',
+    type: 'spv',
+    productType: 'premium_spv',
+    managementFee: 1.5,
+    carry: 15,
+    targetRaise: 2000000,
+    minimumInvestment: 25000,
+    totalSigned: 1800000,
+    totalWired: 1600000,
+    investorCount: 8,
+    estimatedClosingDate: new Date().toISOString(),
+    offeringType: '506b',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    fundManagerId: 'fm-1',
+  },
+  {
+    id: 'dummy-3',
+    name: 'Real Estate Growth',
+    entityName: 'REG Partners',
+    status: 'onboarding',
+    type: 'fund',
+    productType: 'fund',
+    managementFee: 2.5,
+    carry: 20,
+    targetRaise: 10000000,
+    minimumInvestment: 100000,
+    totalSigned: 1000000,
+    totalWired: 500000,
+    investorCount: 4,
+    estimatedClosingDate: new Date().toISOString(),
+    offeringType: '506c',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    fundManagerId: 'fm-1',
+  }
+];
+
 export function HomePage() {
-  const [deals, setDeals] = React.useState<any[]>([])
-  const [uniqueInvestorsCount, setUniqueInvestorsCount] = React.useState<number>(0)
+  const [deals, setDeals] = React.useState<any[]>(dummyDeals)
+  const [uniqueInvestorsCount, setUniqueInvestorsCount] = React.useState<number>(24)
   const [loading, setLoading] = React.useState(true)
   const { requireAuth } = useAuth()
   const router = useRouter()
@@ -154,6 +217,8 @@ export function HomePage() {
       })
       .catch(err => {
         console.error('Failed to fetch dashboard data', err)
+        setDeals([])
+        setUniqueInvestorsCount(0)
         setLoading(false)
       })
   }, [])
@@ -169,9 +234,10 @@ export function HomePage() {
     avgProgress = Math.round((totalProgress / deals.length) * 100);
   }
 
-  if (loading) {
-    return <div className="p-8 text-center text-muted-foreground animate-pulse">Loading dashboard...</div>
-  }
+  // Remove early return for loading to show dummy data initially
+  // if (loading) {
+  //   return <div className="p-8 text-center text-muted-foreground animate-pulse">Loading dashboard...</div>
+  // }
 
   return (
     <div className="relative overflow-hidden w-full h-full">
