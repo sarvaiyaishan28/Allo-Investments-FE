@@ -33,6 +33,7 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Progress } from '@/components/ui/progress'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth } from '@/components/providers/auth-provider'
 import { CreateDealDialog } from '@/components/shared/create-deal-dialog'
 import {
@@ -337,9 +338,7 @@ export function DealsPage() {
   const totalPages = Math.ceil(filteredDeals.length / itemsPerPage)
   const paginatedDeals = filteredDeals.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
 
-  if (loading) {
-    return <div className="p-8 text-center text-muted-foreground animate-pulse">Loading curated opportunities...</div>
-  }
+  // Removed full page loading, using skeletons instead
 
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-6 lg:p-8">
@@ -454,7 +453,36 @@ export function DealsPage() {
       {/* Grid View */}
       {viewMode === 'grid' && (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {paginatedDeals.map((deal, idx) => (
+          {loading ? (
+            Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="h-full flex flex-col overflow-hidden bg-card rounded-2xl border border-border/50">
+                <div className="p-6 pb-8 bg-muted/10">
+                  <div className="flex justify-between items-start mb-6">
+                    <Skeleton className="size-12 rounded-xl" />
+                    <Skeleton className="h-4 w-16 rounded-full" />
+                  </div>
+                  <Skeleton className="h-6 w-3/4 mb-2" />
+                  <Skeleton className="h-4 w-1/2 mb-4" />
+                  <Skeleton className="h-4 w-full mb-1" />
+                  <Skeleton className="h-4 w-5/6" />
+                </div>
+                <div className="grid grid-cols-2 border-t border-border/40">
+                  <div className="p-4 border-b border-r border-border/40"><Skeleton className="h-3 w-16 mb-2" /><Skeleton className="h-5 w-24" /></div>
+                  <div className="p-4 border-b border-border/40"><Skeleton className="h-3 w-16 mb-2" /><Skeleton className="h-5 w-24" /></div>
+                  <div className="p-4 border-b border-r border-border/40"><Skeleton className="h-3 w-16 mb-2" /><Skeleton className="h-5 w-24" /></div>
+                  <div className="p-4 border-b border-border/40"><Skeleton className="h-3 w-16 mb-2" /><Skeleton className="h-5 w-24" /></div>
+                </div>
+                <div className="p-5 mt-auto space-y-5">
+                  <div className="flex gap-2"><Skeleton className="h-5 w-16 rounded-full" /><Skeleton className="h-5 w-24 rounded-full" /></div>
+                  <div className="flex gap-4 pt-2">
+                    <Skeleton className="size-10 rounded-full shrink-0" />
+                    <div className="flex-1"><Skeleton className="h-3 w-24 mb-2" /><Skeleton className="h-4 w-full rounded-full" /></div>
+                    <Skeleton className="size-8 rounded-full shrink-0" />
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : paginatedDeals.map((deal, idx) => (
             <motion.div 
               key={deal.id}
               initial={{ opacity: 0, y: 20 }}
@@ -484,7 +512,27 @@ export function DealsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {paginatedDeals.map((deal) => (
+                  {loading ? (
+                    Array.from({ length: 5 }).map((_, i) => (
+                      <TableRow key={i}>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <Skeleton className="size-8 rounded-full shrink-0" />
+                            <div className="space-y-1">
+                              <Skeleton className="h-4 w-32" />
+                              <Skeleton className="h-3 w-24" />
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
+                        <TableCell><Skeleton className="h-5 w-12 rounded-full" /></TableCell>
+                        <TableCell className="text-right"><Skeleton className="h-4 w-20 ml-auto" /></TableCell>
+                        <TableCell className="text-right"><Skeleton className="h-4 w-20 ml-auto" /></TableCell>
+                        <TableCell className="text-right"><Skeleton className="h-4 w-12 ml-auto" /></TableCell>
+                        <TableCell><Skeleton className="h-8 w-16 ml-auto" /></TableCell>
+                      </TableRow>
+                    ))
+                  ) : paginatedDeals.map((deal) => (
                     <TableRow key={deal.id} className="group hover:bg-muted/50">
                       <TableCell>
                         <Link href={`/deals/${deal.id}`} className="flex items-center gap-3 hover:text-amber-500 transition-colors">
@@ -560,7 +608,7 @@ export function DealsPage() {
         </div>
       )}
 
-      {filteredDeals.length === 0 && (
+      {!loading && filteredDeals.length === 0 && (
         <div className="text-center py-20 border border-dashed rounded-2xl border-border/50">
           <Building2 className="size-10 mx-auto text-muted-foreground/40 mb-3" />
           <p className="text-sm text-muted-foreground">No opportunities match your current filters.</p>

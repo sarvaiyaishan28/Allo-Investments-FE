@@ -41,6 +41,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Skeleton } from '@/components/ui/skeleton'
 import { fetchFiles } from '@/lib/api-client'
 
 function formatFileSize(bytes: number): string {
@@ -229,7 +230,22 @@ export function DocumentsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredFiles.length === 0 ? (
+                    {loading ? (
+                      Array.from({ length: 5 }).map((_, i) => (
+                        <TableRow key={i}>
+                          <TableCell>
+                            <div className="flex items-center gap-2.5">
+                              <Skeleton className="size-4 rounded-sm shrink-0" />
+                              <Skeleton className="h-4 w-32" />
+                            </div>
+                          </TableCell>
+                          <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                          <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                          <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                          <TableCell><Skeleton className="size-7 rounded-md ml-auto" /></TableCell>
+                        </TableRow>
+                      ))
+                    ) : filteredFiles.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={5} className="h-32 text-center">
                           <div className="flex flex-col items-center gap-2">
@@ -296,7 +312,19 @@ export function DocumentsPage() {
             </Card>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-              {filteredFiles.length === 0 ? (
+              {loading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <Card key={i}>
+                    <CardContent className="py-3 px-4">
+                      <div className="flex flex-col items-center text-center">
+                        <Skeleton className="size-12 rounded-lg mb-2" />
+                        <Skeleton className="h-3 w-3/4 mt-0.5 mb-1" />
+                        <Skeleton className="h-2 w-1/2" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              ) : filteredFiles.length === 0 ? (
                 <Card className="col-span-full">
                   <CardContent className="flex flex-col items-center justify-center py-12">
                     <Folder className="size-8 text-muted-foreground/50 mb-2" />

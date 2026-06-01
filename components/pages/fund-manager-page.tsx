@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
 
 import { CreateDealDialog } from "@/components/shared/create-deal-dialog"
 import { fetchDeals } from "@/lib/api-client"
@@ -71,6 +72,7 @@ export function FundManagerPage() {
   const [typeFilter, setTypeFilter] = useState<string>("all")
   const [selectedDeals, setSelectedDeals] = useState<string[]>([])
   const [deals, setDeals] = useState<FundManagerDeal[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function loadDeals() {
@@ -91,8 +93,10 @@ export function FundManagerPage() {
           bankAccount: true, // Placeholder until schema supports it
         }))
         setDeals(mappedDeals)
+        setLoading(false)
       } catch (err) {
         console.error("Failed to load deals:", err)
+        setLoading(false)
       }
     }
     loadDeals()
@@ -283,7 +287,31 @@ export function FundManagerPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredDeals.map((deal, index) => (
+              {loading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="h-10 w-10 rounded-lg shrink-0" />
+                        <div className="space-y-1">
+                          <Skeleton className="h-4 w-32" />
+                          <Skeleton className="h-3 w-24" />
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell><Skeleton className="h-5 w-20 rounded-full" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-16" /></TableCell>
+                    <TableCell className="text-right"><Skeleton className="h-4 w-12 ml-auto" /></TableCell>
+                    <TableCell className="text-right"><Skeleton className="h-4 w-12 ml-auto" /></TableCell>
+                    <TableCell className="text-right"><Skeleton className="h-4 w-20 ml-auto" /></TableCell>
+                    <TableCell className="text-right"><Skeleton className="h-4 w-20 ml-auto" /></TableCell>
+                    <TableCell className="text-right"><Skeleton className="h-4 w-8 ml-auto" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-4 mx-auto" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-4 mx-auto" /></TableCell>
+                    <TableCell><Skeleton className="h-8 w-16 rounded-md ml-auto" /></TableCell>
+                  </TableRow>
+                ))
+              ) : filteredDeals.map((deal, index) => (
                 <motion.tr
                   key={deal.id}
                   initial={{ opacity: 0, y: 10 }}
@@ -341,7 +369,7 @@ export function FundManagerPage() {
         </CardContent>
       </Card>
 
-      {filteredDeals.length === 0 && (
+      {!loading && filteredDeals.length === 0 && (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <FileText className="h-12 w-12 text-muted-foreground/50" />
           <h3 className="mt-4 font-semibold">No deals found</h3>

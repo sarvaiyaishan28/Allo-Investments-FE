@@ -37,6 +37,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Table,
   TableBody,
@@ -93,6 +94,7 @@ export function IdentitiesPage() {
   const [identityType, setIdentityType] = useState<string>("")
   const [identities, setIdentities] = useState<Identity[]>([])
   const [kycDocuments, setKycDocuments] = useState<File[]>([])
+  const [loading, setLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formData, setFormData] = useState({
     firstName: '',
@@ -188,8 +190,10 @@ export function IdentitiesPage() {
           }
         })
         setIdentities(mapped)
+        setLoading(false)
       } catch (err) {
         console.error("Failed to load identities:", err)
+        setLoading(false)
       }
     }
     load()
@@ -487,7 +491,24 @@ export function IdentitiesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredIdentities.map((identity) => {
+              {loading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="h-8 w-8 rounded-full shrink-0" />
+                        <Skeleton className="h-4 w-32" />
+                      </div>
+                    </TableCell>
+                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-24 rounded-full" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-24 rounded-full" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-12" /></TableCell>
+                    <TableCell><Skeleton className="h-8 w-8 rounded-md ml-auto" /></TableCell>
+                  </TableRow>
+                ))
+              ) : filteredIdentities.map((identity) => {
                 const kyco = kycConfig[identity.kycStatus] || kycConfig["Not Started"]
                 const KycIcon = kyco.icon
                 return (
@@ -557,7 +578,38 @@ export function IdentitiesPage() {
       {viewMode === "grid" && (
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         <AnimatePresence mode="popLayout">
-          {filteredIdentities.map((identity, index) => {
+          {loading ? (
+            Array.from({ length: 3 }).map((_, i) => (
+              <motion.div key={`skeleton-${i}`}>
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="h-12 w-12 rounded-full shrink-0" />
+                        <div>
+                          <Skeleton className="h-5 w-32 mb-1" />
+                          <Skeleton className="h-4 w-24" />
+                        </div>
+                      </div>
+                      <Skeleton className="h-8 w-8 rounded-md shrink-0" />
+                    </div>
+                    <div className="mt-4 flex flex-col gap-2">
+                      <Skeleton className="h-4 w-40" />
+                      <Skeleton className="h-4 w-32" />
+                    </div>
+                    <div className="mt-4 flex flex-wrap items-center gap-2">
+                      <Skeleton className="h-5 w-24 rounded-full" />
+                      <Skeleton className="h-5 w-24 rounded-full" />
+                    </div>
+                    <div className="mt-4 flex items-center justify-between border-t pt-4">
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-4 w-32" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))
+          ) : filteredIdentities.map((identity, index) => {
             const kyco = kycConfig[identity.kycStatus] || kycConfig["Not Started"]
             const KycIcon = kyco.icon
             return (
@@ -659,7 +711,7 @@ export function IdentitiesPage() {
       </div>
       )}
 
-      {filteredIdentities.length === 0 && (
+      {!loading && filteredIdentities.length === 0 && (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <User className="h-12 w-12 text-muted-foreground/50" />
           <h3 className="mt-4 font-semibold">No identities found</h3>

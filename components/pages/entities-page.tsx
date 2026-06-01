@@ -44,6 +44,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { Skeleton } from "@/components/ui/skeleton"
 import { fetchEntities, createEntities, deleteEntities, fetchDeals } from "@/lib/api-client"
 
 const statusConfig = {
@@ -365,7 +366,25 @@ export function EntitiesPage() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filteredEntities.map((entity) => {
+          {loading ? (
+            Array.from({ length: 5 }).map((_, i) => (
+              <TableRow key={i}>
+                <TableCell>
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="h-8 w-8 rounded-lg shrink-0" />
+                    <Skeleton className="h-4 w-32" />
+                  </div>
+                </TableCell>
+                <TableCell><Skeleton className="h-4 w-12" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                <TableCell><Skeleton className="h-5 w-20 rounded-full" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-4" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-4" /></TableCell>
+                <TableCell><Skeleton className="h-8 w-8 rounded-md ml-auto" /></TableCell>
+              </TableRow>
+            ))
+          ) : filteredEntities.map((entity) => {
             const config = getEntityStatusConfig(entity.status)
             const StatusIcon = config.icon
             return (
@@ -431,7 +450,44 @@ export function EntitiesPage() {
   {viewMode === "grid" && (
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         <AnimatePresence mode="popLayout">
-          {filteredEntities.map((entity, index) => {
+          {loading ? (
+            Array.from({ length: 3 }).map((_, i) => (
+              <motion.div key={`skeleton-${i}`}>
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="h-11 w-11 rounded-lg shrink-0" />
+                        <div>
+                          <Skeleton className="h-5 w-32 mb-1" />
+                          <Skeleton className="h-4 w-24" />
+                        </div>
+                      </div>
+                      <Skeleton className="h-8 w-8 rounded-md shrink-0" />
+                    </div>
+                    <div className="mt-4 flex flex-wrap items-center gap-2">
+                      <Skeleton className="h-5 w-20 rounded-full" />
+                      <Skeleton className="h-5 w-24 rounded-full" />
+                    </div>
+                    <div className="mt-4 grid grid-cols-3 gap-4 border-t pt-4">
+                      <div className="text-center flex flex-col items-center">
+                        <Skeleton className="h-6 w-6 mb-1" />
+                        <Skeleton className="h-3 w-10" />
+                      </div>
+                      <div className="text-center flex flex-col items-center">
+                        <Skeleton className="h-6 w-6 mb-1" />
+                        <Skeleton className="h-3 w-16" />
+                      </div>
+                      <div className="text-center flex flex-col items-center">
+                        <Skeleton className="h-6 w-12 mb-1" />
+                        <Skeleton className="h-3 w-12" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))
+          ) : filteredEntities.map((entity, index) => {
             const config = getEntityStatusConfig(entity.status)
             const StatusIcon = config.icon
             return (
@@ -521,7 +577,7 @@ export function EntitiesPage() {
   </div>
   )}
 
-      {filteredEntities.length === 0 && (
+      {!loading && filteredEntities.length === 0 && (
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Building2 className="h-12 w-12 text-muted-foreground/50" />

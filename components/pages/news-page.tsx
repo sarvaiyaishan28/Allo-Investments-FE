@@ -12,6 +12,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
+import { Skeleton } from '@/components/ui/skeleton'
 import { fetchNews } from '@/lib/api-client'
 import type { NewsArticle } from '@/lib/types'
 
@@ -225,23 +226,55 @@ export function NewsPage() {
           </div>
 
           <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-            {/* Featured + Grid */}
-            <div className="space-y-6">
-              {featuredArticle && <FeaturedArticle article={featuredArticle} />}
-              
-              <div className="grid gap-4 sm:grid-cols-2">
-                {bottomArticles.map((article) => (
-                  <ArticleCard key={article.id} article={article} />
-                ))}
-              </div>
-            </div>
+            {loading ? (
+              <>
+                <div className="space-y-6">
+                  <Skeleton className="h-[400px] w-full rounded-xl" />
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                      <div key={i} className="h-full space-y-4">
+                        <Skeleton className="aspect-[16/10] w-full rounded-xl" />
+                        <div className="space-y-2">
+                          <Skeleton className="h-4 w-full" />
+                          <Skeleton className="h-4 w-3/4" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="flex gap-4 p-3">
+                      <div className="flex-1 space-y-2">
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-3 w-3/4" />
+                      </div>
+                      <Skeleton className="size-16 rounded-lg shrink-0" />
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Featured + Grid */}
+                <div className="space-y-6">
+                  {featuredArticle && <FeaturedArticle article={featuredArticle} />}
+                  
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {bottomArticles.map((article) => (
+                      <ArticleCard key={article.id} article={article} />
+                    ))}
+                  </div>
+                </div>
 
-            {/* Sidebar */}
-            <div className="space-y-1">
-              {sidebarArticles.map((article) => (
-                <SidebarArticle key={article.id} article={article} />
-              ))}
-            </div>
+                {/* Sidebar */}
+                <div className="space-y-1">
+                  {sidebarArticles.map((article) => (
+                    <SidebarArticle key={article.id} article={article} />
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </motion.div>
       </div>
