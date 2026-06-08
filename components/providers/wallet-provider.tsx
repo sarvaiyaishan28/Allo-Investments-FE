@@ -1,6 +1,9 @@
 'use client'
 
 import * as React from 'react'
+import { useAccount, useDisconnect, useBalance, useSendTransaction } from 'wagmi'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
+import { parseEther, formatUnits } from 'viem'
 
 export type WalletType = 'metamask' | 'phantom' | 'coinbase' | 'walletconnect' | 'rainbow'
 
@@ -11,14 +14,6 @@ export type Network = {
   chainId: number
   rpcUrl?: string
 }
-
-export const networks: Network[] = [
-  { id: 'ethereum', name: 'Ethereum', symbol: 'ETH', chainId: 1 },
-  { id: 'polygon', name: 'Polygon', symbol: 'MATIC', chainId: 137 },
-  { id: 'arbitrum', name: 'Arbitrum', symbol: 'ETH', chainId: 42161 },
-  { id: 'optimism', name: 'Optimism', symbol: 'ETH', chainId: 10 },
-  { id: 'base', name: 'Base', symbol: 'ETH', chainId: 8453 },
-]
 
 export type TransactionStatus = 'idle' | 'pending' | 'confirming' | 'success' | 'error'
 
@@ -62,145 +57,119 @@ export function useWallet() {
   return context
 }
 
-function generateMockAddress(): string {
-  const chars = '0123456789abcdef'
-  let address = '0x'
-  for (let i = 0; i < 40; i++) {
-    address += chars[Math.floor(Math.random() * chars.length)]
-  }
-  return address
-}
-
 function shortenAddress(address: string): string {
+  if (!address) return ''
   return `${address.slice(0, 6)}...${address.slice(-4)}`
 }
 
-function generateMockTxHash(): string {
-  const chars = '0123456789abcdef'
-  let hash = '0x'
-  for (let i = 0; i < 64; i++) {
-    hash += chars[Math.floor(Math.random() * chars.length)]
-  }
-  return hash
-}
-
-// Mock ETH price for USD conversion
+// Mock ETH price for USD conversion since wagmi doesn't provide price feeds natively
 const ETH_PRICE_USD = 3500
 
 export function WalletProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = React.useState<WalletState>({
-    isConnected: false,
-    isConnecting: false,
-    address: null,
-    shortAddress: null,
-    walletType: null,
-    network: networks[0],
-    balance: 0,
-    balanceUSD: 0,
-  })
-  const [isModalOpen, setIsModalOpen] = React.useState(false)
+  const { address, isConnected, isConnecting, chain } = useAccount()
+  const { disconnect: wagmiDisconnect } = useDisconnect()
+  const { data: balanceData } = useBalance({ address })
+  const { openConnectModal } = useConnectModal()
+
+  const { sendTransactionAsync } = useSendTransaction()
+
   const [pendingTransaction, setPendingTransaction] = React.useState<Transaction | null>(null)
 
+  const balance = balanceData ? parseFloat(formatUnits(balanceData.value, balanceData.decimals)) : 0
+  const balanceUSD = balance * ETH_PRICE_USD
+
+  const network: Network | null = chain ? {
+    id: chain.id.toString(),
+    name: chain.name,
+    symbol: chain.nativeCurrency.symbol,
+    chainId: chain.id,
+  } : null
+
   const connect = React.useCallback(async (walletType: WalletType) => {
-    setState(prev => ({ ...prev, isConnecting: true }))
-    
-    // Simulate connection delay
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    
-    const address = generateMockAddress()
-    // Generate a random balance between 0.5 and 15 ETH
-    const balance = Math.random() * 14.5 + 0.5
-    
-    setState({
-      isConnected: true,
-      isConnecting: false,
-      address,
-      shortAddress: shortenAddress(address),
-      walletType,
-      network: networks[0],
-      balance,
-      balanceUSD: balance * ETH_PRICE_USD,
-    })
-    
-    setIsModalOpen(false)
-  }, [])
+    if (openConnectModal) {
+      openConnectModal()
+    }
+  }, [openConnectModal])
 
   const disconnect = React.useCallback(() => {
-    setState({
-      isConnected: false,
-      isConnecting: false,
-      address: null,
-      shortAddress: null,
-      walletType: null,
-      network: networks[0],
-      balance: 0,
-      balanceUSD: 0,
-    })
+    wagmiDisconnect()
     setPendingTransaction(null)
-  }, [])
+  }, [wagmiDisconnect])
 
-  const switchNetwork = React.useCallback((network: Network) => {
-    setState(prev => ({
-      ...prev,
-      network,
-    }))
+  const switchNetwork = React.useCallback((n: Network) => {
+    // switchChain could be implemented here
   }, [])
 
   const sendTransaction = React.useCallback(async (amount: number, to: string): Promise<Transaction> => {
-    const txHash = generateMockTxHash()
-    
-    // Create pending transaction
+    if (!address) throw new Error("Wallet not connected")
+
+    const amountInETH = amount / ETH_PRICE_USD
+
+    // Create pending tx record
     const tx: Transaction = {
-      hash: txHash,
+      hash: '',
       status: 'pending',
       amount,
       to,
       timestamp: Date.now(),
     }
-    
     setPendingTransaction(tx)
-    
-    // Simulate wallet popup and user approval (2 seconds)
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    
-    // Update to confirming
-    tx.status = 'confirming'
-    setPendingTransaction({ ...tx })
-    
-    // Simulate blockchain confirmation (2 seconds)
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    
-    // Complete transaction
-    tx.status = 'success'
-    setPendingTransaction({ ...tx })
-    
-    // Update balance
-    const amountInETH = amount / ETH_PRICE_USD
-    setState(prev => ({
-      ...prev,
-      balance: Math.max(0, prev.balance - amountInETH),
-      balanceUSD: Math.max(0, prev.balanceUSD - amount),
-    }))
-    
-    return tx
-  }, [])
 
-  const openModal = React.useCallback(() => setIsModalOpen(true), [])
-  const closeModal = React.useCallback(() => setIsModalOpen(false), [])
+    try {
+      // Wagmi requires a valid 0x address. If 'to' is just an entity name, use a dummy burn/treasury address.
+      let targetAddress = to
+      if (!targetAddress.startsWith('0x') || targetAddress.length !== 42) {
+        targetAddress = '0x000000000000000000000000000000000000dEaD'
+      }
+
+      const txHash = await sendTransactionAsync({
+        to: targetAddress as `0x${string}`,
+        value: parseEther(amountInETH.toFixed(18))
+      })
+
+      const updatedTx = { ...tx, hash: txHash, status: 'confirming' as const }
+      setPendingTransaction(updatedTx)
+
+      // Simulate blockchain confirmation wait
+      await new Promise(resolve => setTimeout(resolve, 2000))
+
+      const finalTx = { ...updatedTx, status: 'success' as const }
+      setPendingTransaction(finalTx)
+      return finalTx
+    } catch (e) {
+      setPendingTransaction({ ...tx, status: 'error' })
+      throw e
+    }
+  }, [address, sendTransactionAsync])
+
+  const openModal = React.useCallback(() => {
+    if (openConnectModal) openConnectModal()
+  }, [openConnectModal])
+
+  const closeModal = React.useCallback(() => {
+    // RainbowKit handles its own modal close
+  }, [])
 
   const value = React.useMemo(
     () => ({
-      ...state,
+      isConnected,
+      isConnecting,
+      address: address || null,
+      shortAddress: address ? shortenAddress(address) : null,
+      walletType: null,
+      network,
+      balance,
+      balanceUSD,
       connect,
       disconnect,
       switchNetwork,
       sendTransaction,
-      isModalOpen,
+      isModalOpen: false,
       openModal,
       closeModal,
       pendingTransaction,
     }),
-    [state, connect, disconnect, switchNetwork, sendTransaction, isModalOpen, openModal, closeModal, pendingTransaction]
+    [isConnected, isConnecting, address, network, balance, balanceUSD, connect, disconnect, switchNetwork, sendTransaction, openModal, closeModal, pendingTransaction]
   )
 
   return (

@@ -2,10 +2,12 @@ import type { Metadata, Viewport } from 'next'
 import { Space_Grotesk, IBM_Plex_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { ThemeProvider } from '@/components/providers/theme-provider'
+import { RainbowProvider } from '@/components/providers/rainbow-provider'
 import { WalletProvider } from '@/components/providers/wallet-provider'
 import { AuthProvider } from '@/components/providers/auth-provider'
 import { LoginRequiredDialog } from '@/components/ui/login-required-dialog'
 import { Toaster } from '@/components/ui/sonner'
+import '@rainbow-me/rainbowkit/styles.css'
 import './globals.css'
 
 const spaceGrotesk = Space_Grotesk({ 
@@ -55,11 +57,13 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            <WalletProvider>
-              {children}
-              <LoginRequiredDialog />
-              <Toaster />
-            </WalletProvider>
+            <RainbowProvider>
+              <WalletProvider>
+                {children}
+                <LoginRequiredDialog />
+                <Toaster />
+              </WalletProvider>
+            </RainbowProvider>
           </AuthProvider>
         </ThemeProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}

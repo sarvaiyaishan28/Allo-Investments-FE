@@ -33,6 +33,7 @@ import {
 import { useTheme } from 'next-themes'
 
 import { cn } from '@/lib/utils'
+import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { useWallet } from '@/components/providers/wallet-provider'
 import { useAuth } from '@/components/providers/auth-provider'
 import { fetchNotifications } from '@/lib/api-client'
@@ -50,7 +51,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { AlloLogo } from '@/components/ui/allo-logo'
-import { WalletConnectModal } from '@/components/wallet/wallet-connect-modal'
 import {
   Sheet,
   SheetContent,
@@ -92,12 +92,12 @@ const supportNavItems = [
   { title: 'Help', href: '/help', icon: HelpCircle },
 ]
 
-function NavLink({ 
-  item, 
+function NavLink({
+  item,
   isActive,
   collapsed,
   onClick,
-}: { 
+}: {
   item: { title: string; href: string; icon: React.ElementType }
   isActive: boolean
   collapsed: boolean
@@ -138,7 +138,7 @@ function DesktopSidebar({ collapsed, setCollapsed }: { collapsed: boolean; setCo
   const pathname = usePathname()
   const { user, logout, isAuthenticated } = useAuth()
 
-  const visibleMainNav = mainNavItems.filter(item => 
+  const visibleMainNav = mainNavItems.filter(item =>
     isAuthenticated || ['/', '/deals'].includes(item.href)
   )
   const visibleFinanceNav = isAuthenticated ? financeNavItems : []
@@ -146,7 +146,7 @@ function DesktopSidebar({ collapsed, setCollapsed }: { collapsed: boolean; setCo
 
   return (
     <TooltipProvider>
-      <aside 
+      <aside
         className={cn(
           'hidden lg:flex flex-col h-screen sticky top-0 border-r bg-card transition-all duration-200',
           collapsed ? 'w-[68px]' : 'w-60'
@@ -171,9 +171,9 @@ function DesktopSidebar({ collapsed, setCollapsed }: { collapsed: boolean; setCo
               </p>
             )}
             {visibleMainNav.map((item) => (
-              <NavLink 
-                key={item.href} 
-                item={item} 
+              <NavLink
+                key={item.href}
+                item={item}
                 isActive={pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))}
                 collapsed={collapsed}
               />
@@ -182,20 +182,20 @@ function DesktopSidebar({ collapsed, setCollapsed }: { collapsed: boolean; setCo
 
           {visibleFinanceNav.length > 0 && (
             <div className="space-y-1">
-            {!collapsed && (
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-2">
-                Finance
-              </p>
-            )}
-            {visibleFinanceNav.map((item) => (
-              <NavLink 
-                key={item.href} 
-                item={item} 
-                isActive={pathname === item.href || pathname.startsWith(item.href)}
-                collapsed={collapsed}
-              />
-            ))}
-          </div>
+              {!collapsed && (
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-2">
+                  Finance
+                </p>
+              )}
+              {visibleFinanceNav.map((item) => (
+                <NavLink
+                  key={item.href}
+                  item={item}
+                  isActive={pathname === item.href || pathname.startsWith(item.href)}
+                  collapsed={collapsed}
+                />
+              ))}
+            </div>
           )}
 
           <div className="space-y-1">
@@ -205,9 +205,9 @@ function DesktopSidebar({ collapsed, setCollapsed }: { collapsed: boolean; setCo
               </p>
             )}
             {discoverNavItems.map((item) => (
-              <NavLink 
-                key={item.href} 
-                item={item} 
+              <NavLink
+                key={item.href}
+                item={item}
                 isActive={pathname === item.href || pathname.startsWith(item.href)}
                 collapsed={collapsed}
               />
@@ -218,9 +218,9 @@ function DesktopSidebar({ collapsed, setCollapsed }: { collapsed: boolean; setCo
         {/* Footer */}
         <div className="border-t py-3 px-3 space-y-1">
           {visibleSupportNav.map((item) => (
-            <NavLink 
-              key={item.href} 
-              item={item} 
+            <NavLink
+              key={item.href}
+              item={item}
               isActive={pathname === item.href}
               collapsed={collapsed}
             />
@@ -312,9 +312,8 @@ function DesktopSidebar({ collapsed, setCollapsed }: { collapsed: boolean; setCo
 
 function TopHeader() {
   const { theme, setTheme } = useTheme()
-  const { isConnected, shortAddress, openModal, disconnect } = useWallet()
   const [notifications, setNotifications] = React.useState<Notification[]>([])
-  
+
   React.useEffect(() => {
     fetchNotifications().then(setNotifications).catch(console.error)
   }, [])
@@ -372,8 +371,8 @@ function TopHeader() {
         </DropdownMenu>
 
         {/* Theme Toggle */}
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           size="icon"
           className="size-8"
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
@@ -384,29 +383,7 @@ function TopHeader() {
         </Button>
 
         {/* Wallet */}
-        {isConnected ? (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-8 gap-2 text-xs font-medium">
-                <div className="size-2 rounded-full bg-success" />
-                {shortAddress}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel className="text-xs">Wallet Connected</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={disconnect} className="text-xs">
-                <LogOut className="size-3.5 mr-2" />
-                Disconnect
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        ) : (
-          <Button size="sm" className="h-8 text-xs font-medium" onClick={openModal}>
-            <Wallet className="size-3.5 mr-1.5" />
-            Connect Wallet
-          </Button>
-        )}
+        <CustomConnectButton />
       </div>
     </header>
   )
@@ -415,11 +392,10 @@ function TopHeader() {
 function MobileHeader() {
   const pathname = usePathname()
   const { theme, setTheme } = useTheme()
-  const { isConnected, shortAddress, openModal } = useWallet()
   const { user, isAuthenticated } = useAuth()
   const [open, setOpen] = React.useState(false)
 
-  const visibleMainNav = mainNavItems.filter(item => 
+  const visibleMainNav = mainNavItems.filter(item =>
     isAuthenticated || ['/', '/deals'].includes(item.href)
   )
   const visibleFinanceNav = isAuthenticated ? financeNavItems : []
@@ -463,27 +439,27 @@ function MobileHeader() {
               </div>
 
               {visibleFinanceNav.length > 0 && (
-              <div className="space-y-1">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-2 mb-2">
-                  Finance
-                </p>
-                {visibleFinanceNav.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setOpen(false)}
-                    className={cn(
-                      'flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors',
-                      pathname === item.href || pathname.startsWith(item.href)
-                        ? 'bg-primary text-primary-foreground'
-                        : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
-                    )}
-                  >
-                    <item.icon className="size-4" />
-                    {item.title}
-                  </Link>
-                ))}
-              </div>
+                <div className="space-y-1">
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-2 mb-2">
+                    Finance
+                  </p>
+                  {visibleFinanceNav.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setOpen(false)}
+                      className={cn(
+                        'flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors',
+                        pathname === item.href || pathname.startsWith(item.href)
+                          ? 'bg-primary text-primary-foreground'
+                          : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+                      )}
+                    >
+                      <item.icon className="size-4" />
+                      {item.title}
+                    </Link>
+                  ))}
+                </div>
               )}
 
               <div className="space-y-1">
@@ -559,8 +535,8 @@ function MobileHeader() {
         <Button variant="ghost" size="icon" className="size-9">
           <Bell className="size-4" />
         </Button>
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           size="icon"
           className="size-9"
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
@@ -568,16 +544,7 @@ function MobileHeader() {
           <Sun className="size-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
           <Moon className="absolute size-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
         </Button>
-        {isConnected ? (
-          <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
-            <div className="size-1.5 rounded-full bg-success" />
-            {shortAddress}
-          </Button>
-        ) : (
-          <Button size="sm" className="h-8 text-xs" onClick={openModal}>
-            <Wallet className="size-3.5" />
-          </Button>
-        )}
+        <CustomConnectButton />
       </div>
     </header>
   )
@@ -589,7 +556,6 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   const pathname = usePathname()
-  const { isModalOpen, closeModal } = useWallet()
   const { user, logout, isAuthenticated, isLoading, requireAuth } = useAuth()
   const [collapsed, setCollapsed] = React.useState(false)
 
@@ -616,7 +582,113 @@ export function AppLayout({ children }: AppLayoutProps) {
           {children}
         </main>
       </div>
-      <WalletConnectModal open={isModalOpen} onOpenChange={closeModal} />
     </div>
   )
+}
+
+function CustomConnectButton() {
+  return (
+    <ConnectButton.Custom>
+      {({
+        account,
+        chain,
+        openAccountModal,
+        openChainModal,
+        openConnectModal,
+        authenticationStatus,
+        mounted,
+      }) => {
+        const ready = mounted && authenticationStatus !== 'loading';
+        const connected =
+          ready &&
+          account &&
+          chain &&
+          (!authenticationStatus ||
+            authenticationStatus === 'authenticated');
+
+        return (
+          <div
+            {...(!ready && {
+              'aria-hidden': true,
+              'style': {
+                opacity: 0,
+                pointerEvents: 'none',
+                userSelect: 'none',
+              },
+            })}
+          >
+            {(() => {
+              if (!connected) {
+                return (
+                  <Button 
+                    onClick={openConnectModal} 
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-4 h-9 gap-2 rounded-lg"
+                  >
+                    <Wallet className="size-4" />
+                    Connect Wallet
+                  </Button>
+                );
+              }
+
+              if (chain.unsupported) {
+                return (
+                  <Button 
+                    onClick={openChainModal} 
+                    variant="destructive" 
+                    className="h-9 gap-2 rounded-lg font-semibold"
+                  >
+                    Wrong network
+                  </Button>
+                );
+              }
+
+              return (
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <Button
+                    onClick={openChainModal}
+                    style={{ display: 'flex', alignItems: 'center' }}
+                    variant="secondary"
+                    className="h-9 gap-2 rounded-lg font-semibold hidden sm:flex px-3"
+                  >
+                    {chain.hasIcon && (
+                      <div
+                        style={{
+                          background: chain.iconBackground,
+                          width: 16,
+                          height: 16,
+                          borderRadius: 999,
+                          overflow: 'hidden',
+                        }}
+                      >
+                        {chain.iconUrl && (
+                          <img
+                            alt={chain.name ?? 'Chain icon'}
+                            src={chain.iconUrl}
+                            style={{ width: 16, height: 16 }}
+                          />
+                        )}
+                      </div>
+                    )}
+                  </Button>
+
+                  <Button 
+                    onClick={openAccountModal} 
+                    variant="secondary" 
+                    className="h-9 gap-2 rounded-lg font-semibold px-3"
+                  >
+                    <Avatar className="size-5">
+                      <AvatarFallback className="bg-primary/10 text-primary text-[10px]">
+                        {account.displayName.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="hidden sm:inline">{account.displayName}</span>
+                  </Button>
+                </div>
+              );
+            })()}
+          </div>
+        );
+      }}
+    </ConnectButton.Custom>
+  );
 }

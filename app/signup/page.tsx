@@ -57,7 +57,7 @@ function SignupPageContent() {
       return
     }
 
-    const { success, error: signupError, loggedIn } = await signup(email.trim(), password, name.trim())
+    const { success, error: signupError, loggedIn } = (await signup(email.trim(), password, name.trim())) as any
     
     setIsLoading(false)
     if (success) {

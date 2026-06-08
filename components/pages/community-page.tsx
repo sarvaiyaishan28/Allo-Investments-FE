@@ -17,6 +17,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { cn } from '@/lib/utils'
 
 const container = {
@@ -32,11 +33,65 @@ const item = {
   show: { opacity: 1, y: 0 }
 }
 
-const upcomingEvents: any[] = []
+const upcomingEvents: any[] = [
+  {
+    id: 1,
+    date: '15 Sep 2026',
+    image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=500&auto=format&fit=crop&q=60',
+    title: 'Q3 Investor Summit',
+    location: 'Virtual Event',
+    time: '10:00 AM - 12:00 PM EST'
+  },
+  {
+    id: 2,
+    date: '22 Oct 2026',
+    image: 'https://images.unsplash.com/photo-1556761175-5973dc0f32d7?w=500&auto=format&fit=crop&q=60',
+    title: 'Founders & Funders Mixer',
+    location: 'New York City, NY',
+    time: '6:00 PM - 9:00 PM EST'
+  }
+]
 
-const eventVideos: any[] = []
+const eventVideos: any[] = [
+  {
+    id: 1,
+    image: 'https://images.unsplash.com/photo-1591115765373-5207764f72e7?w=500&auto=format&fit=crop&q=60',
+    title: 'State of Venture Capital 2026'
+  },
+  {
+    id: 2,
+    image: 'https://images.unsplash.com/photo-1551818255-e6e10975bc17?w=500&auto=format&fit=crop&q=60',
+    title: 'Navigating Tech Regulations'
+  },
+  {
+    id: 3,
+    image: 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=500&auto=format&fit=crop&q=60',
+    title: 'Deep Tech Investment Strategies'
+  }
+]
 
-const pastEvents: any[] = []
+const pastEvents: any[] = [
+  {
+    id: 1,
+    date: 'Aug 24, 2026',
+    day: 'Thursday',
+    time: '10:00 AM - 11:30 AM',
+    title: 'Web3 & Crypto Roundtable',
+    location: 'Virtual',
+    description: 'An in-depth discussion on the evolving landscape of decentralized finance and opportunities in the crypto space.',
+    image: 'https://images.unsplash.com/photo-1621416894569-0f39ed31d247?w=500&auto=format&fit=crop&q=60'
+  },
+  {
+    id: 2,
+    date: 'Jul 15, 2026',
+    day: 'Wednesday',
+    time: '2:00 PM - 4:00 PM',
+    title: 'Healthcare Innovation Panel',
+    location: 'In Person - Boston, MA',
+    description: 'Experts shared insights on biotech breakthroughs and digital health platforms revolutionizing patient care.',
+    image: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=500&auto=format&fit=crop&q=60'
+  }
+]
 
 export function CommunityPage() {
   return (
@@ -194,8 +249,46 @@ export function CommunityPage() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="p-8 text-center text-muted-foreground border rounded-xl bg-muted/20">
-                  <p className="text-sm">No new insights available at the moment.</p>
+                <div className="space-y-4">
+                  <div className="flex gap-3 items-start border-b pb-4">
+                    <Avatar className="size-8">
+                      <AvatarFallback className="bg-primary/10 text-primary text-xs">AF</AvatarFallback>
+                    </Avatar>
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium leading-none">Alice Freeman</p>
+                      <p className="text-xs text-muted-foreground leading-relaxed">What are your thoughts on the new AI SaaS deals on the platform?</p>
+                      <div className="flex gap-3 text-xs text-muted-foreground pt-1">
+                        <span className="flex items-center gap-1 hover:text-primary cursor-pointer transition-colors"><ThumbsUp className="size-3" /> 12</span>
+                        <span className="flex items-center gap-1 hover:text-primary cursor-pointer transition-colors"><MessageSquare className="size-3" /> 4</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-3 items-start border-b pb-4">
+                    <Avatar className="size-8">
+                      <AvatarFallback className="bg-primary/10 text-primary text-xs">BS</AvatarFallback>
+                    </Avatar>
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium leading-none">Bob Smith</p>
+                      <p className="text-xs text-muted-foreground leading-relaxed">Looking for co-investors in the upcoming Real Estate syndication.</p>
+                      <div className="flex gap-3 text-xs text-muted-foreground pt-1">
+                        <span className="flex items-center gap-1 hover:text-primary cursor-pointer transition-colors"><ThumbsUp className="size-3" /> 8</span>
+                        <span className="flex items-center gap-1 hover:text-primary cursor-pointer transition-colors"><MessageSquare className="size-3" /> 2</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-3 items-start">
+                    <Avatar className="size-8">
+                      <AvatarFallback className="bg-primary/10 text-primary text-xs">CK</AvatarFallback>
+                    </Avatar>
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium leading-none">Chloe Kim</p>
+                      <p className="text-xs text-muted-foreground leading-relaxed">Great insights from yesterday's founders mixer. Anyone got notes?</p>
+                      <div className="flex gap-3 text-xs text-muted-foreground pt-1">
+                        <span className="flex items-center gap-1 hover:text-primary cursor-pointer transition-colors"><ThumbsUp className="size-3" /> 24</span>
+                        <span className="flex items-center gap-1 hover:text-primary cursor-pointer transition-colors"><MessageSquare className="size-3" /> 9</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
